@@ -1,0 +1,66 @@
+name: On Merge Promote Branch Image to Prod
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  branch-and-last-commit:
+    uses: brianjbayer/actions-image-cicd/.github/workflows/get_merged_branch_last_commit.yml@main
+
+  branch-and-last-commit-merged-info:
+    needs: [branch-and-last-commit]
+    runs-on: ubuntu-latest
+    env:
+      BRANCH_LAST_COMMIT: ${{ needs.branch-and-last-commit.outputs.commit }}
+      BRANCH: ${{ needs.branch-and-last-commit.outputs.branch }}
+    steps:
+      - name: Output last commit of merged branch env var
+        run: echo "BRANCH_LAST_COMMIT=[${BRANCH_LAST_COMMIT}]"
+      - name: Output merged branch env var
+        run: echo "BRANCH=[${BRANCH}]"
+
+  promote-branch-last-commit-to-prod:
+    needs: [branch-and-last-commit]
+    uses: brianjbayer/actions-image-cicd/.github/workflows/pull_push_image.yml@main
+    with:
+      # Pull last (vetted) branch image
+      pull_as: brianjbayer/samplecsharpxunitselenium_${{ needs.branch-and-last-commit.outputs.branch }}:${{ needs.branch-and-last-commit.outputs.commit }}
+      # Push prod Image
+      push_as: brianjbayer/samplecsharpxunitselenium:${{ needs.branch-and-last-commit.outputs.commit }}
+    secrets:
+      registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
+      registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+  promote-branch-last-commit-to-prod-latest:
+    needs: [branch-and-last-commit, promote-branch-last-commit-to-prod]
+    uses: brianjbayer/actions-image-cicd/.github/workflows/pull_push_latest_image.yml@main
+    with:
+      image_name: brianjbayer/samplecsharpxunitselenium
+      image_tag: ${{ needs.branch-and-last-commit.outputs.commit }}
+    secrets:
+      registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
+      registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+  promote-branch-last-commit-devenv:
+    needs: [branch-and-last-commit]
+    uses: brianjbayer/actions-image-cicd/.github/workflows/pull_push_image.yml@main
+    with:
+      # Pull last branch devenv image
+      pull_as: brianjbayer/samplecsharpxunitselenium_${{ needs.branch-and-last-commit.outputs.branch }}_dev:${{ needs.branch-and-last-commit.outputs.commit }}
+      # Push prod devenv image
+      push_as: brianjbayer/samplecsharpxunitselenium-dev:${{ needs.branch-and-last-commit.outputs.commit }}
+    secrets:
+      registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
+      registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+  promote-branch-last-commit-devenv-to-latest:
+    needs: [branch-and-last-commit, promote-branch-last-commit-devenv]
+    uses: brianjbayer/actions-image-cicd/.github/workflows/pull_push_latest_image.yml@main
+    with:
+      image_name: brianjbayer/samplecsharpxunitselenium-dev
+      image_tag: ${{ needs.branch-and-last-commit.outputs.commit }}
+    secrets:
+      registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
+      registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
