@@ -1,0 +1,6 @@
+version: '3.4'
+services:
+  browsertests:
+    image: ${BROWSERTESTS_IMAGE:-brianjbayer/samplecsharpxunitselenium-dev:latest}
+    volumes:
+      - ${BROWSERTESTS_SRC:-.}:/app

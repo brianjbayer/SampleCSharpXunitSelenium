@@ -1,0 +1,28 @@
+﻿version: '3.4'
+services:
+  browsertests:
+    environment:
+      - Browser=${Browser:-chrome}
+      - Headless
+      - Remote_Url=http://${SELENIUM_HOSTNAME:-selenium-browser}:4444/wd/hub
+      - REMOTE_STATUS=http://${SELENIUM_HOSTNAME:-selenium-browser}:4444/wd/hub/status
+    depends_on:
+      - seleniumbrowser
+
+  seleniumbrowser:
+    image: ${SELENIUM_IMAGE:-selenium/standalone-chrome:latest}
+    container_name: ${SELENIUM_HOSTNAME:-selenium-browser}
+    shm_size: 2gb
+    ports:
+      - "5900:5900"
+      - "7900:7900"
+    volumes:
+      - /dev/shm:/dev/shm
+    environment:
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+      - SE_NODE_MAX_SESSIONS=20
+    healthcheck:
+      test: ["CMD-SHELL", '/opt/bin/check-grid.sh --host 0.0.0.0 --port 4444']
+      interval: 15s
+      timeout: 30s
+      retries: 5

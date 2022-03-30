@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0"/>
+    <PackageReference Include="xunit" Version="2.4.1"/>
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0"/>
+    <PackageReference Include="FluentAssertions" Version="6.5.1"/>
+    <PackageReference Include="Selenium.WebDriver" Version="4.1.0"/>
+    <PackageReference Include="Selenium.Support" Version="4.1.0"/>
+    <PackageReference Include="WebDriverManager" Version="2.12.3" />
+    <!-- The following are transitive packages explicitly included to avoid transitive CVEs   -->
+    <!-- Ideally these should be removed if/when the transitive vulnerabilities are addressed -->
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Tests\"/>
+    <Folder Include="PageObjects\"/>
+    <Folder Include="PageObjects\Login\"/>
+    <Folder Include="Support\"/>
+    <Folder Include="Tests\Login\"/>
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove=".DS_Store"/>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>

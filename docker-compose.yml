@@ -1,0 +1,9 @@
+version: '3.4'
+services:
+  browsertests:
+    image: brianjbayer/samplecsharpxunitselenium:${BROWSERTESTS_TAG:-latest}
+    container_name: ${BROWSERTESTS_HOSTNAME:-browsertests}
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-unused}
+      - ValidLoginUser
+      - ValidLoginPass

@@ -1,0 +1,5 @@
+version: '3.4'
+services:
+  browsertests:
+  # Override production image but no volume mount like dev
+    image: ${BROWSERTESTS_IMAGE}
