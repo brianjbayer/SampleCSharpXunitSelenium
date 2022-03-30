@@ -14,6 +14,9 @@ These tests show how to use C#-Selenium to verify...
 It also demonstrates the basic features of the
 C#-Selenium framework and how they can be extended.
 
+> This project is based upon the brilliant work of
+> [Benjamin Truthan](https://www.linkedin.com/in/benjamin-truthan-67986aa8/)
+
 ## Run Locally or in Containers
 This project can be run...
 * Locally containerized in two separate Docker containers:
