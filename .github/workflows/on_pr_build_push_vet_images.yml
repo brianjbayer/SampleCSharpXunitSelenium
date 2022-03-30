@@ -1,0 +1,150 @@
+name: On PR Build Push Vet
+
+on:
+  pull_request:
+    branches:
+      - main
+
+env:
+  BRANCH: ${{ github.head_ref }}
+  COMMIT: ${{ github.event.pull_request.head.sha }}
+
+# Possibly produced images
+  #             owner/repository_branch:commitsha
+  VETTED_IMAGE: brianjbayer/samplecsharpxunitselenium_${{ github.head_ref }}:${{ github.event.pull_request.head.sha }}
+
+  #               owner/repository_branch_unvetted:commitsha
+  UNVETTED_IMAGE: brianjbayer/samplecsharpxunitselenium_${{ github.head_ref }}_unvetted:${{ github.event.pull_request.head.sha }}
+
+  #             owner/repository_branch_dev:commitsha
+  DEVENV_IMAGE: brianjbayer/samplecsharpxunitselenium_${{ github.head_ref }}_dev:${{ github.event.pull_request.head.sha }}
+
+jobs:
+
+  # Build and Push Images
+  build-and-push-branch-devenv:
+    uses: brianjbayer/actions-image-cicd/.github/workflows/build_push_image.yml@main
+    with:
+      image: brianjbayer/samplecsharpxunitselenium_${{ github.head_ref }}_dev:${{ github.event.pull_request.head.sha }}
+      buildopts: --target devenv
+    secrets:
+      registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
+      registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+  build-and-push-branch-unvetted:
+    uses: brianjbayer/actions-image-cicd/.github/workflows/build_push_image.yml@main
+    with:
+      image: brianjbayer/samplecsharpxunitselenium_${{ github.head_ref }}_unvetted:${{ github.event.pull_request.head.sha }}
+    secrets:
+      registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
+      registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+  # Vet Deploy Image
+  vet-code-standards:
+    needs: build-and-push-branch-devenv
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: dockercomposerun linting on development environment
+        run: "BROWSERTESTS_IMAGE=${DEVENV_IMAGE} ./SampleCSharpXunitSelenium/script/dockercomposerun -n -d ./SampleCSharpXunitSelenium/script/runlint"
+
+  vet-dependency-security:
+    needs: build-and-push-branch-devenv
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: dockercomposerun security scan on development environment
+        run: "BROWSERTESTS_IMAGE=${DEVENV_IMAGE} ./SampleCSharpXunitSelenium/script/dockercomposerun -n -d ./SampleCSharpXunitSelenium/script/runsecscan"
+
+  vet-e2e-tests-deploy-image-default-chrome:
+    needs: build-and-push-branch-unvetted
+    runs-on: ubuntu-latest
+    env:
+      ValidLoginUser: ${{ secrets.ValidLoginUser }}
+      ValidLoginPass: ${{ secrets.ValidLoginPass }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: dockercomposerun unvetted image
+        run: "BROWSERTESTS_IMAGE=${UNVETTED_IMAGE} ./SampleCSharpXunitSelenium/script/dockercomposerun -c"
+
+  vet-e2e-tests-deploy-image-firefox:
+    needs: build-and-push-branch-unvetted
+    runs-on: ubuntu-latest
+    env:
+      Browser: firefox
+      SELENIUM_IMAGE: selenium/standalone-firefox:latest
+      ValidLoginUser: ${{ secrets.ValidLoginUser }}
+      ValidLoginPass: ${{ secrets.ValidLoginPass }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: dockercomposerun unvetted image
+        run: "BROWSERTESTS_IMAGE=${UNVETTED_IMAGE} ./SampleCSharpXunitSelenium/script/dockercomposerun -c"
+
+  vet-e2e-tests-deploy-image-edge:
+    needs: build-and-push-branch-unvetted
+    runs-on: ubuntu-latest
+    env:
+      Browser: edge
+      SELENIUM_IMAGE: selenium/standalone-edge:latest
+      ValidLoginUser: ${{ secrets.ValidLoginUser }}
+      ValidLoginPass: ${{ secrets.ValidLoginPass }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: dockercomposerun unvetted image
+        run: "BROWSERTESTS_IMAGE=${UNVETTED_IMAGE} ./SampleCSharpXunitSelenium/script/dockercomposerun -c"
+
+# Push (IF) Vetted Deploy Image
+  push-branch-vetted-deploy-image:
+    needs:
+      - vet-code-standards
+      - vet-dependency-security
+      - vet-e2e-tests-deploy-image-default-chrome
+      - vet-e2e-tests-deploy-image-firefox
+      - vet-e2e-tests-deploy-image-edge
+    uses: brianjbayer/actions-image-cicd/.github/workflows/pull_push_image.yml@main
+    with:
+      # Pull unvetted branch image
+      pull_as: brianjbayer/samplecsharpxunitselenium_${{ github.head_ref }}_unvetted:${{ github.event.pull_request.head.sha }}
+      # Push Vetted Image
+      push_as: brianjbayer/samplecsharpxunitselenium_${{ github.head_ref }}:${{ github.event.pull_request.head.sha }}
+    secrets:
+      registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
+      registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+  # Vet Dev Environment Image
+  vet-e2e-tests-devenv-image-default-chrome:
+    needs: build-and-push-branch-devenv
+    runs-on: ubuntu-latest
+    env:
+      ValidLoginUser: ${{ secrets.ValidLoginUser }}
+      ValidLoginPass: ${{ secrets.ValidLoginPass }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: dockercomposerun devenv image
+        run: "BROWSERTESTS_IMAGE=${DEVENV_IMAGE} ./SampleCSharpXunitSelenium/script/dockercomposerun -d ./SampleCSharpXunitSelenium/script/runtests"
+
+  vet-e2e-tests-devenv-image-firefox:
+    needs: build-and-push-branch-devenv
+    runs-on: ubuntu-latest
+    env:
+      Browser: firefox
+      SELENIUM_IMAGE: selenium/standalone-firefox:latest
+      ValidLoginUser: ${{ secrets.ValidLoginUser }}
+      ValidLoginPass: ${{ secrets.ValidLoginPass }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: dockercomposerun devenv image
+        run: "BROWSERTESTS_IMAGE=${DEVENV_IMAGE} ./SampleCSharpXunitSelenium/script/dockercomposerun -d ./SampleCSharpXunitSelenium/script/runtests"
+
+  vet-e2e-tests-devenv-image-edge:
+    needs: build-and-push-branch-devenv
+    runs-on: ubuntu-latest
+    env:
+      Browser: edge
+      SELENIUM_IMAGE: selenium/standalone-edge:latest
+      ValidLoginUser: ${{ secrets.ValidLoginUser }}
+      ValidLoginPass: ${{ secrets.ValidLoginPass }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: dockercomposerun devenv image
+        run: "BROWSERTESTS_IMAGE=${DEVENV_IMAGE} ./SampleCSharpXunitSelenium/script/dockercomposerun -d ./SampleCSharpXunitSelenium/script/runtests"
