@@ -35,7 +35,7 @@ jobs:
     uses: brianjbayer/actions-image-cicd/.github/workflows/pull_push_image.yml@main
     with:
       # Pull last (vetted) branch image
-      pull_as: brianjbayer/samplecsharpxunitselenium_$${{ needs.push-norm-branch.outputs.name }}:${{ needs.branch-and-last-commit.outputs.commit }}
+      pull_as: brianjbayer/samplecsharpxunitselenium_${{ needs.push-norm-branch.outputs.name }}:${{ needs.branch-and-last-commit.outputs.commit }}
       # Push prod Image
       push_as: brianjbayer/samplecsharpxunitselenium:${{ needs.branch-and-last-commit.outputs.commit }}
     secrets:
