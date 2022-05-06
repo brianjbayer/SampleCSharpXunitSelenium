@@ -9,24 +9,33 @@ jobs:
   branch-and-last-commit:
     uses: brianjbayer/actions-image-cicd/.github/workflows/get_merged_branch_last_commit.yml@main
 
-  branch-and-last-commit-merged-info:
+  push-norm-branch:
     needs: [branch-and-last-commit]
+    uses: brianjbayer/actions-image-cicd/.github/workflows/normalize_for_image_name.yml@main
+    with:
+      raw_name: ${{ needs.branch-and-last-commit.outputs.branch }}
+
+  branch-and-last-commit-merged-info:
+    needs: [branch-and-last-commit, push-norm-branch]
     runs-on: ubuntu-latest
     env:
       BRANCH_LAST_COMMIT: ${{ needs.branch-and-last-commit.outputs.commit }}
       BRANCH: ${{ needs.branch-and-last-commit.outputs.branch }}
+      NORM_BRANCH: ${{ needs.push-norm-branch.outputs.name }}
     steps:
       - name: Output last commit of merged branch env var
         run: echo "BRANCH_LAST_COMMIT=[${BRANCH_LAST_COMMIT}]"
       - name: Output merged branch env var
         run: echo "BRANCH=[${BRANCH}]"
+      - name: Output normalized merged branch env var
+        run: echo "NORM_BRANCH=[${NORM_BRANCH}]"
 
   promote-branch-last-commit-to-prod:
-    needs: [branch-and-last-commit]
+    needs: [branch-and-last-commit, push-norm-branch]
     uses: brianjbayer/actions-image-cicd/.github/workflows/pull_push_image.yml@main
     with:
       # Pull last (vetted) branch image
-      pull_as: brianjbayer/samplecsharpxunitselenium_${{ needs.branch-and-last-commit.outputs.branch }}:${{ needs.branch-and-last-commit.outputs.commit }}
+      pull_as: brianjbayer/samplecsharpxunitselenium_$${{ needs.push-norm-branch.outputs.name }}:${{ needs.branch-and-last-commit.outputs.commit }}
       # Push prod Image
       push_as: brianjbayer/samplecsharpxunitselenium:${{ needs.branch-and-last-commit.outputs.commit }}
     secrets:
@@ -44,11 +53,11 @@ jobs:
       registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
   promote-branch-last-commit-devenv:
-    needs: [branch-and-last-commit]
+    needs: [branch-and-last-commit, push-norm-branch]
     uses: brianjbayer/actions-image-cicd/.github/workflows/pull_push_image.yml@main
     with:
       # Pull last branch devenv image
-      pull_as: brianjbayer/samplecsharpxunitselenium_${{ needs.branch-and-last-commit.outputs.branch }}_dev:${{ needs.branch-and-last-commit.outputs.commit }}
+      pull_as: brianjbayer/samplecsharpxunitselenium_${{ needs.push-norm-branch.outputs.name }}_dev:${{ needs.branch-and-last-commit.outputs.commit }}
       # Push prod devenv image
       push_as: brianjbayer/samplecsharpxunitselenium-dev:${{ needs.branch-and-last-commit.outputs.commit }}
     secrets:
