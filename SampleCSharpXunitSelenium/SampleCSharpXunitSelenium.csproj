@@ -13,10 +13,10 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0"/>
-    <PackageReference Include="FluentAssertions" Version="6.5.1"/>
-    <PackageReference Include="Selenium.WebDriver" Version="4.1.0"/>
-    <PackageReference Include="Selenium.Support" Version="4.1.0"/>
-    <PackageReference Include="WebDriverManager" Version="2.12.3" />
+    <PackageReference Include="FluentAssertions" Version="6.6.0"/>
+    <PackageReference Include="Selenium.WebDriver" Version="4.1.1"/>
+    <PackageReference Include="Selenium.Support" Version="4.1.1"/>
+    <PackageReference Include="WebDriverManager" Version="2.12.4" />
     <!-- The following are transitive packages explicitly included to avoid transitive CVEs   -->
     <!-- Ideally these should be removed if/when the transitive vulnerabilities are addressed -->
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
