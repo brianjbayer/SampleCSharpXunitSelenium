@@ -140,7 +140,7 @@ the tests either can be run directly by the
 or by the supplied `runtests` script.
 
 ### Prerequisites
-* .NET 6 SDK
+* .NET 7 SDK
 * To run the tests using a specific browser requires that browser
   be installed (e.g. to run the tests in the Chrome Browser requires
   Chrome be installed).
