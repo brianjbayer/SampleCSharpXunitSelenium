@@ -23,4 +23,4 @@ COPY --chown=deployer . /app/
 # Change to the tests subproject directory
 WORKDIR /app/SampleCSharpXunitSelenium
 # Overridable: Run the tests
-CMD ./script/runtests
+CMD ./script/run tests

@@ -127,7 +127,7 @@ For more information, see the Selenium Standalone Image
    ValidLoginUser=tomsmith ValidLoginPass=SuperSecretPassword! ./SampleCSharpXunitSelenium/script/dockercomposerun bash
    ```
 3. Run desired commands in the container
-   (e.g. `./script/runtests`)
+   (e.g. `./script/run tests`)
 4. Run the exit command to exit the Test container
    ```
    exit
@@ -135,12 +135,12 @@ For more information, see the Selenium Standalone Image
 
 ## To Run the Automated Tests Natively
 Assuming that you have a DOTNET SDK development environment,
-the tests either can be run directly by the 
+the tests either can be run directly by the
 [dotnet test runner](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-test)
-or by the supplied `runtests` script.
+or by the supplied `run` script.
 
 ### Prerequisites
-* .NET 7 SDK
+* .NET 8 SDK
 * To run the tests using a specific browser requires that browser
   be installed (e.g. to run the tests in the Chrome Browser requires
   Chrome be installed).
@@ -168,7 +168,7 @@ or by the supplied `runtests` script.
 `Browser=chrome`
 
 > If the `Browser` environment variable is not provided (i.e. set),
-> then the Chrome browser is used from its setting as the default in 
+> then the Chrome browser is used from its setting as the default in
 > `SampleCSharpXunitSelenium/appsettings.json`
 
 The following browsers are supported and were working on Mac at the time
@@ -211,12 +211,12 @@ ValidLoginUser=tomsmith ValidLoginPass=SuperSecretPassword! dotnet test
 ```
 
 ```
-ValidLoginUser=tomsmith ValidLoginPass=SuperSecretPassword! ./SampleCSharpXunitSelenium/script/runtests
+ValidLoginUser=tomsmith ValidLoginPass=SuperSecretPassword! ./SampleCSharpXunitSelenium/script/run tests
 ```
 
 #### Local Browsers
 ```
-Browser=firefox Headless=true ValidLoginUser=tomsmith ValidLoginPass=SuperSecretPassword! ./SampleCSharpXunitSelenium/script/runtests
+Browser=firefox Headless=true ValidLoginUser=tomsmith ValidLoginPass=SuperSecretPassword! ./SampleCSharpXunitSelenium/script/run tests
 ```
 
 #### Using the Selenium Standalone Containers
@@ -234,7 +234,7 @@ For specifics, see the Selenium Standalone Image
 2. If you want, launch the VNC client in app or browser
 3. Run the tests specifying the remote Selenium container...
    ```
-   Remote_Url='http://localhost:4444/wd/hub' REMOTE_STATUS=${Remote_Url}/status Browser=chrome ValidLoginUser=tomsmith ValidLoginPass=SuperSecretPassword! ./SampleCSharpXunitSelenium/script/runtests
+   Remote_Url='http://localhost:4444/wd/hub' REMOTE_STATUS=${Remote_Url}/status Browser=chrome ValidLoginUser=tomsmith ValidLoginPass=SuperSecretPassword! ./SampleCSharpXunitSelenium/script/run tests
    ```
 
 ## Development
@@ -304,17 +304,17 @@ environment...
 
 * To run the **tests**...
   ```
-  ./SampleCSharpXunitSelenium/script/runtests
+  ./SampleCSharpXunitSelenium/script/run tests
   ```
 
 * To run the **linting**...
   ```
-  ./SampleCSharpXunitSelenium/script/runlint
+  ./SampleCSharpXunitSelenium/script/run lint
   ```
 
 * To run the dependency **security scan**...
   ```
-  ./SampleCSharpXunitSelenium/script/runsecscan
+  ./SampleCSharpXunitSelenium/script/run secscan
   ```
 
 ## Sources and Additional Information
