@@ -13,7 +13,7 @@ env:
 #  Raw Branch Name: ${{ github.head_ref }}
 #  <commit-sha>: ${{ github.event.pull_request.head.sha }}
 
-# Produced images...
+# Produced multi-architecture (linux/amd64,linux/arm64) images...
 #  1. (Always) Unvetted Image: brianjbayer/samplecsharpxunitselenium_<normalized-branch>_unvetted:<commit-sha>
 #  2. (Always) Dev Environment Image: brianjbayer/samplecsharpxunitselenium_<normalized-branch>_dev:<commit-sha>
 #  3. (If vetted) Vetted_image: brianjbayer/samplecsharpxunitselenium_<normalized-branch>:<commit-sha>
@@ -26,28 +26,32 @@ jobs:
       raw_name: ${{ github.head_ref }}
 
   # Build and Push Images
-  build-and-push-branch-devenv:
+  buildx-and-push-branch-devenv:
     needs: [pr-norm-branch]
-    uses: brianjbayer/actions-image-cicd/.github/workflows/build_push_image.yml@main
+    # TODO: Change to use main branch when buildx_push_image merged
+    uses: brianjbayer/actions-image-cicd/.github/workflows/buildx_push_image.yml@add-multi-arch-buildx
     with:
       image: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}_dev:${{ github.event.pull_request.head.sha }}
       buildopts: --target devenv
+      platforms: "linux/amd64,linux/arm64"
     secrets:
       registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
       registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-  build-and-push-branch-unvetted:
+  buildx-and-push-branch-unvetted:
     needs: [pr-norm-branch]
-    uses: brianjbayer/actions-image-cicd/.github/workflows/build_push_image.yml@main
+    # TODO: Change to use main branch when buildx_push_image merged
+    uses: brianjbayer/actions-image-cicd/.github/workflows/buildx_push_image.yml@add-multi-arch-buildx
     with:
       image: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}_unvetted:${{ github.event.pull_request.head.sha }}
+      platforms: "linux/amd64,linux/arm64"
     secrets:
       registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
       registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
   # Vet Deploy Image
   vet-code-standards:
-    needs: [pr-norm-branch, build-and-push-branch-devenv]
+    needs: [pr-norm-branch, buildx-and-push-branch-devenv]
     runs-on: ubuntu-latest
     env:
       DEVENV_IMAGE: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}_dev:${{ github.event.pull_request.head.sha }}
@@ -57,7 +61,7 @@ jobs:
         run: "BROWSERTESTS_IMAGE=${DEVENV_IMAGE} ./SampleCSharpXunitSelenium/script/dockercomposerun -n -d ./SampleCSharpXunitSelenium/script/run lint"
 
   vet-dependency-security:
-    needs: [pr-norm-branch, build-and-push-branch-devenv]
+    needs: [pr-norm-branch, buildx-and-push-branch-devenv]
     runs-on: ubuntu-latest
     env:
       DEVENV_IMAGE: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}_dev:${{ github.event.pull_request.head.sha }}
@@ -67,7 +71,7 @@ jobs:
         run: "BROWSERTESTS_IMAGE=${DEVENV_IMAGE} ./SampleCSharpXunitSelenium/script/dockercomposerun -n -d ./SampleCSharpXunitSelenium/script/run secscan"
 
   vet-deploy-image-e2e-tests-matrix:
-    needs: [pr-norm-branch, build-and-push-branch-unvetted]
+    needs: [pr-norm-branch, buildx-and-push-branch-unvetted]
     strategy:
       fail-fast: false
       matrix:
@@ -84,26 +88,25 @@ jobs:
       - name: dockercomposerun unvetted image
         run: "BROWSERTESTS_IMAGE=${UNVETTED_IMAGE} ./SampleCSharpXunitSelenium/script/dockercomposerun -c"
 
-# Push (IF) Vetted Deploy Image
-  push-branch-vetted-deploy-image:
+# Copy (IF) Vetted Deploy Image
+  copy-branch-vetted-deploy-image:
     needs:
       - vet-code-standards
       - vet-dependency-security
       - vet-deploy-image-e2e-tests-matrix
       - pr-norm-branch
-    uses: brianjbayer/actions-image-cicd/.github/workflows/pull_push_image.yml@main
+    # TODO: Change to use main branch when buildx_push_image merged
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@add-multi-arch-buildx
     with:
-      # Pull unvetted branch image
-      pull_as: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}_unvetted:${{ github.event.pull_request.head.sha }}
-      # Push Vetted Image
-      push_as: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}:${{ github.event.pull_request.head.sha }}
+      source_image: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}_unvetted:${{ github.event.pull_request.head.sha }}
+      target_image: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}:${{ github.event.pull_request.head.sha }}
     secrets:
       registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
       registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
   # Vet Dev Environment Image
   vet-devenv-image-e2e-tests-matrix:
-    needs: [pr-norm-branch, build-and-push-branch-devenv]
+    needs: [pr-norm-branch, buildx-and-push-branch-devenv]
     strategy:
       fail-fast: false
       matrix:
