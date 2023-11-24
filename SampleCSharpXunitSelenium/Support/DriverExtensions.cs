@@ -44,7 +44,7 @@ namespace SampleCSharpXunitSelenium.Support
         }
 
         ///<summary>
-        ///Pass the select element and the value, and this will set the value in the select and attempt to fire an event to trigger 
+        ///Pass the select element and the value, and this will set the value in the select and attempt to fire an event to trigger
         ///any dynamic vue logic and or form validation.
         ///</summary>
         public static void JsSelectByValue(this IWebElement element, string value)
@@ -120,7 +120,7 @@ namespace SampleCSharpXunitSelenium.Support
             }
 
             TakeScreenshot(Driver);
-            Assert.True(false, "Condition timed out: " + timeoutMessage);
+            Assert.Fail("Condition timed out: " + timeoutMessage);
             return default(T);
         }
 

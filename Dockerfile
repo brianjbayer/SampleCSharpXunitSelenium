@@ -1,5 +1,5 @@
 # Base Image is the builder stage since it is an SDK
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS builder
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS builder
 
 # Dev Environment Stage
 FROM builder AS devenv
