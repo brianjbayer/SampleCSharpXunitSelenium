@@ -7,9 +7,6 @@ using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Safari;
 using OpenQA.Selenium.Remote;
-using WebDriverManager;
-using WebDriverManager.DriverConfigs;
-using WebDriverManager.DriverConfigs.Impl;
 
 namespace SampleCSharpXunitSelenium.Support
 {
@@ -55,18 +52,15 @@ namespace SampleCSharpXunitSelenium.Support
             return browserOptions;
         }
 
-        private static IWebDriver CreateBrowser<T, U, V>(T browserOptions,
+        private static IWebDriver CreateBrowser<T, U>(T browserOptions,
           bool isLocal, String remoteUrl)
           where T : DriverOptions
           where U : WebDriver
-          where V : IDriverConfig
         {
             IWebDriver driver;
 
             if (isLocal)
             {
-                V driverConfig = (V)Activator.CreateInstance(typeof(V), new object[] { });
-                new DriverManager().SetUpDriver(driverConfig);
                 driver = (U)Activator.CreateInstance(typeof(U), new object[] { browserOptions });
             }
             else
@@ -90,29 +84,29 @@ namespace SampleCSharpXunitSelenium.Support
                 case "chrome":
                     {
                         ChromeOptions browserOptions = ConfigureChromiumOptions<ChromeOptions>(isHeadless);
-                        driver = CreateBrowser<ChromeOptions, ChromeDriver, ChromeConfig>(browserOptions, isLocal, remoteUrl);
+                        driver = CreateBrowser<ChromeOptions, ChromeDriver>(browserOptions, isLocal, remoteUrl);
                         break;
                     }
 
                 case "edge":
                     {
                         EdgeOptions browserOptions = ConfigureChromiumOptions<EdgeOptions>(isHeadless);
-                        driver = CreateBrowser<EdgeOptions, EdgeDriver, EdgeConfig>(browserOptions, isLocal, remoteUrl);
+                        driver = CreateBrowser<EdgeOptions, EdgeDriver>(browserOptions, isLocal, remoteUrl);
                         break;
                     }
 
                 case "firefox":
                     {
                         FirefoxOptions browserOptions = ConfigureFirefoxOptions(isHeadless);
-                        driver = CreateBrowser<FirefoxOptions, FirefoxDriver, FirefoxConfig>(browserOptions, isLocal, remoteUrl);
+                        driver = CreateBrowser<FirefoxOptions, FirefoxDriver>(browserOptions, isLocal, remoteUrl);
                         break;
                     }
 
                 case "safari":
                     {
                         // Safari only supports local, and has builtin browserdriver
-                        SafariOptions browserOptions = new SafariOptions();
-                        driver = new SafariDriver(browserOptions);
+                        SafariOptions safariOptions = new SafariOptions();
+                        driver = new SafariDriver(safariOptions);
                         break;
                     }
 
