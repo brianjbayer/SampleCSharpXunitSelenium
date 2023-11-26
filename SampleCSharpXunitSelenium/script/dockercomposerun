@@ -70,6 +70,10 @@ docker_compose_command='docker-compose -f docker-compose.yml '
 if [ -z ${noselenium} ]; then
   echo "...Adding Selenium Browser to Environment"
   docker_compose_command="${docker_compose_command} -f docker-compose.selenium.yml "
+  if [[ `uname -m` == "arm64" ]]; then
+    echo "...Apple Silicon Detected adding Seleniarm Browser Override to Environment"
+    docker_compose_command="${docker_compose_command} -f docker-compose.seleniarm.yml "
+  fi
 fi
 
 if [ ! -z ${ci} ]; then
