@@ -49,6 +49,10 @@ the tests against a
 [Selenium Standalone](https://github.com/SeleniumHQ/docker-selenium)
 container.
 
+> :apple: Apple Silicon Macs will actually run against the
+> [Seleniarm Standalone](https://github.com/seleniumhq-community/docker-seleniarm)
+> container
+
 You can view the running tests, using the included
 Virtual Network Computing (VNC) server.
 
@@ -106,11 +110,18 @@ For more information, see the Selenium Standalone Image
 2. From the project root directory, run the `dockercomposerun`
    script setting the `Browser` and `SELENIUM_IMAGE`
    environment variables to specify Firefox...
+
+   For Apple Silicon...
+   ```
+   Browser=firefox SELENIUM_IMAGE=seleniarm/standalone-firefox ValidLoginUser=tomsmith ValidLoginPass=SuperSecretPassword! ./SampleCSharpXunitSelenium/script/dockercomposerun
+   ```
+
+   For Intel...
    ```
    Browser=firefox SELENIUM_IMAGE=selenium/standalone-firefox ValidLoginUser=tomsmith ValidLoginPass=SuperSecretPassword! ./SampleCSharpXunitSelenium/script/dockercomposerun
    ```
 
-### To Run Using the Edge Standalone Container
+### To Run Using the Edge Standalone Container (Intel only)
 1. Ensure Docker is running
 2. From the project root directory, run the `dockercomposerun`
    script setting the `Browser` and `SELENIUM_IMAGE`
@@ -318,5 +329,5 @@ environment...
   ```
 
 ## Sources and Additional Information
-* The [WebDriverManager.Net](https://github.com/rosolko/WebDriverManager.Net)
 * The [Selenium Docker Images](https://github.com/SeleniumHQ/docker-selenium)
+* The [Seleniarm Docker Images](https://github.com/seleniumhq-community/docker-seleniarm)
