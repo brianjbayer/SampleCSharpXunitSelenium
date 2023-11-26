@@ -29,7 +29,7 @@ jobs:
   buildx-and-push-branch-devenv:
     needs: [pr-norm-branch]
     # TODO: Change to use main branch when buildx_push_image merged
-    uses: brianjbayer/actions-image-cicd/.github/workflows/buildx_push_image.yml@add-multi-arch-buildx
+    uses: brianjbayer/actions-image-cicd/.github/workflows/buildx_push_image.yml@main
     with:
       image: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}_dev:${{ github.event.pull_request.head.sha }}
       buildopts: --target devenv
@@ -41,7 +41,7 @@ jobs:
   buildx-and-push-branch-unvetted:
     needs: [pr-norm-branch]
     # TODO: Change to use main branch when buildx_push_image merged
-    uses: brianjbayer/actions-image-cicd/.github/workflows/buildx_push_image.yml@add-multi-arch-buildx
+    uses: brianjbayer/actions-image-cicd/.github/workflows/buildx_push_image.yml@main
     with:
       image: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}_unvetted:${{ github.event.pull_request.head.sha }}
       platforms: "linux/amd64,linux/arm64"
@@ -96,7 +96,7 @@ jobs:
       - vet-deploy-image-e2e-tests-matrix
       - pr-norm-branch
     # TODO: Change to use main branch when buildx_push_image merged
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@add-multi-arch-buildx
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@main
     with:
       source_image: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}_unvetted:${{ github.event.pull_request.head.sha }}
       target_image: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}:${{ github.event.pull_request.head.sha }}

@@ -33,7 +33,7 @@ jobs:
   promote-branch-last-commit-to-prod:
     needs: [branch-and-last-commit, push-norm-branch]
     # TODO: Change to main
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@add-multi-arch-buildx
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@main
     with:
       source_image: brianjbayer/samplecsharpxunitselenium_${{ needs.push-norm-branch.outputs.name }}:${{ needs.branch-and-last-commit.outputs.commit }}
       target_image: brianjbayer/samplecsharpxunitselenium:${{ needs.branch-and-last-commit.outputs.commit }}
@@ -44,7 +44,7 @@ jobs:
   promote-branch-last-commit-to-prod-latest:
     needs: [branch-and-last-commit, promote-branch-last-commit-to-prod]
     # TODO: Change to main
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image_to_latest.yml@add-multi-arch-buildx
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image_to_latest.yml@main
     with:
       image_name: brianjbayer/samplecsharpxunitselenium
       image_tag: ${{ needs.branch-and-last-commit.outputs.commit }}
@@ -55,7 +55,7 @@ jobs:
   promote-branch-last-commit-devenv:
     needs: [branch-and-last-commit, push-norm-branch]
     # TODO: Change to main
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@add-multi-arch-buildx
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@main
     with:
       source_image: brianjbayer/samplecsharpxunitselenium_${{ needs.push-norm-branch.outputs.name }}_dev:${{ needs.branch-and-last-commit.outputs.commit }}
       target_image: brianjbayer/samplecsharpxunitselenium-dev:${{ needs.branch-and-last-commit.outputs.commit }}
@@ -66,7 +66,7 @@ jobs:
   promote-branch-last-commit-devenv-to-latest:
     needs: [branch-and-last-commit, promote-branch-last-commit-devenv]
     # TODO: Change to main
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image_to_latest.yml@add-multi-arch-buildx
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image_to_latest.yml@main
     with:
       image_name: brianjbayer/samplecsharpxunitselenium-dev
       image_tag: ${{ needs.branch-and-last-commit.outputs.commit }}
