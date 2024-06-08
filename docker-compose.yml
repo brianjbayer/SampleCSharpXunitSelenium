@@ -1,4 +1,3 @@
-version: '3.4'
 services:
   browsertests:
     image: brianjbayer/samplecsharpxunitselenium:${BROWSERTESTS_TAG:-latest}

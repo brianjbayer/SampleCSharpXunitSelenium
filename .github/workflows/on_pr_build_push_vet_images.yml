@@ -56,7 +56,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: dockercomposerun linting on development environment
-        run: "BROWSERTESTS_IMAGE=${DEVENV_IMAGE} ./SampleCSharpXunitSelenium/script/dockercomposerun -n -d ./SampleCSharpXunitSelenium/script/run lint"
+        run: "BROWSERTESTS_IMAGE=${DEVENV_IMAGE} ./SampleCSharpXunitSelenium/script/dockercomposerun -do ./SampleCSharpXunitSelenium/script/run lint"
 
   vet-dependency-security:
     needs: [pr-norm-branch, buildx-and-push-branch-devenv]
@@ -66,7 +66,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: dockercomposerun security scan on development environment
-        run: "BROWSERTESTS_IMAGE=${DEVENV_IMAGE} ./SampleCSharpXunitSelenium/script/dockercomposerun -n -d ./SampleCSharpXunitSelenium/script/run secscan"
+        run: "BROWSERTESTS_IMAGE=${DEVENV_IMAGE} ./SampleCSharpXunitSelenium/script/dockercomposerun -do ./SampleCSharpXunitSelenium/script/run secscan"
 
   vet-deploy-image-e2e-tests-matrix:
     needs: [pr-norm-branch, buildx-and-push-branch-unvetted]
