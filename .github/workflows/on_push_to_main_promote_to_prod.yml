@@ -7,11 +7,11 @@ on:
 jobs:
 
   branch-and-last-commit:
-    uses: brianjbayer/actions-image-cicd/.github/workflows/get_merged_branch_last_commit.yml@main
+    uses: brianjbayer/actions-image-cicd/.github/workflows/get_merged_branch_last_commit.yml@v0.1.0
 
   push-norm-branch:
     needs: [branch-and-last-commit]
-    uses: brianjbayer/actions-image-cicd/.github/workflows/normalize_for_image_name.yml@main
+    uses: brianjbayer/actions-image-cicd/.github/workflows/normalize_for_image_name.yml@v0.1.0
     with:
       raw_name: ${{ needs.branch-and-last-commit.outputs.branch }}
 
@@ -32,7 +32,7 @@ jobs:
 
   promote-branch-last-commit-to-prod:
     needs: [branch-and-last-commit, push-norm-branch]
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@main
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@v0.1.0
     with:
       source_image: brianjbayer/samplecsharpxunitselenium_${{ needs.push-norm-branch.outputs.name }}:${{ needs.branch-and-last-commit.outputs.commit }}
       target_image: brianjbayer/samplecsharpxunitselenium:${{ needs.branch-and-last-commit.outputs.commit }}
@@ -42,7 +42,7 @@ jobs:
 
   promote-branch-last-commit-to-prod-latest:
     needs: [branch-and-last-commit, promote-branch-last-commit-to-prod]
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image_to_latest.yml@main
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image_to_latest.yml@v0.1.0
     with:
       image_name: brianjbayer/samplecsharpxunitselenium
       image_tag: ${{ needs.branch-and-last-commit.outputs.commit }}
@@ -52,7 +52,7 @@ jobs:
 
   promote-branch-last-commit-devenv:
     needs: [branch-and-last-commit, push-norm-branch]
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@main
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@v0.1.0
     with:
       source_image: brianjbayer/samplecsharpxunitselenium_${{ needs.push-norm-branch.outputs.name }}_dev:${{ needs.branch-and-last-commit.outputs.commit }}
       target_image: brianjbayer/samplecsharpxunitselenium-dev:${{ needs.branch-and-last-commit.outputs.commit }}
@@ -62,7 +62,7 @@ jobs:
 
   promote-branch-last-commit-devenv-to-latest:
     needs: [branch-and-last-commit, promote-branch-last-commit-devenv]
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image_to_latest.yml@main
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image_to_latest.yml@v0.1.0
     with:
       image_name: brianjbayer/samplecsharpxunitselenium-dev
       image_tag: ${{ needs.branch-and-last-commit.outputs.commit }}
