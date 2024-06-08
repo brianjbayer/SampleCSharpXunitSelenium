@@ -1,8 +1,9 @@
 # Base Image is the builder stage since it is an SDK
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS builder
+ARG BASE_IMAGE=mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim
+FROM --platform=$BUILDPLATFORM ${BASE_IMAGE} AS sdk
 
 # Dev Environment Stage
-FROM builder AS devenv
+FROM sdk AS devenv
 # At least install vim (git is already present)
 RUN apt-get update && apt-get --no-install-recommends -y install vim
 # ASSUME project source is volume mounted into the container at path /app
@@ -10,7 +11,7 @@ WORKDIR /app
 CMD bash
 
 # Deploy Stage
-FROM builder AS deploy
+FROM sdk AS deploy
 # TODO is this needed still - must run as root
 RUN sed -i 's/SECLEVEL=2/SECLEVEL=1/g' /etc/ssl/openssl.cnf
 
