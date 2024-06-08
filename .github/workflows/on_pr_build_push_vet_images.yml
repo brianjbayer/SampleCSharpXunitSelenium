@@ -1,121 +1,100 @@
-name: On PR Build Push Vet
+name: Build and Vet
 
 on:
   pull_request:
     branches:
       - main
 
-env:
-  BRANCH: ${{ github.head_ref }}
-  COMMIT: ${{ github.event.pull_request.head.sha }}
-
-# FYI...
-#  Raw Branch Name: ${{ github.head_ref }}
-#  <commit-sha>: ${{ github.event.pull_request.head.sha }}
-
-# Produced multi-architecture (linux/amd64,linux/arm64) images...
-#  1. (Always) Unvetted Image: brianjbayer/samplecsharpxunitselenium_<normalized-branch>_unvetted:<commit-sha>
-#  2. (Always) Dev Environment Image: brianjbayer/samplecsharpxunitselenium_<normalized-branch>_dev:<commit-sha>
-#  3. (If vetted) Vetted_image: brianjbayer/samplecsharpxunitselenium_<normalized-branch>:<commit-sha>
-
 jobs:
-  # Normalize the branch for image name
-  pr-norm-branch:
-    uses: brianjbayer/actions-image-cicd/.github/workflows/normalize_for_image_name.yml@main
+
+  # --- Image Names ---
+
+  image-names:
+    name: PR (Branch) Image Names
+    uses: brianjbayer/actions-image-cicd/.github/workflows/image_names.yml@v0.2.0
     with:
-      raw_name: ${{ github.head_ref }}
+      image_base_name: brianjbayer/samplecsharpxunitselenium
+      add_branch_name: true
 
-  # Build and Push Images
-  buildx-and-push-branch-devenv:
-    needs: [pr-norm-branch]
-    uses: brianjbayer/actions-image-cicd/.github/workflows/buildx_push_image.yml@main
-    with:
-      image: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}_dev:${{ github.event.pull_request.head.sha }}
-      buildopts: --target devenv
-      platforms: "linux/amd64,linux/arm64"
-    secrets:
-      registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
-      registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+  # --- Build and Push Images ---
 
-  buildx-and-push-branch-unvetted:
-    needs: [pr-norm-branch]
-    uses: brianjbayer/actions-image-cicd/.github/workflows/buildx_push_image.yml@main
-    with:
-      image: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}_unvetted:${{ github.event.pull_request.head.sha }}
-      platforms: "linux/amd64,linux/arm64"
-    secrets:
-      registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
-      registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
-  # Vet Deploy Image
-  vet-code-standards:
-    needs: [pr-norm-branch, buildx-and-push-branch-devenv]
-    runs-on: ubuntu-latest
-    env:
-      DEVENV_IMAGE: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}_dev:${{ github.event.pull_request.head.sha }}
-    steps:
-      - uses: actions/checkout@v1
-      - name: dockercomposerun linting on development environment
-        run: "BROWSERTESTS_IMAGE=${DEVENV_IMAGE} ./SampleCSharpXunitSelenium/script/dockercomposerun -do ./SampleCSharpXunitSelenium/script/run lint"
-
-  vet-dependency-security:
-    needs: [pr-norm-branch, buildx-and-push-branch-devenv]
-    runs-on: ubuntu-latest
-    env:
-      DEVENV_IMAGE: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}_dev:${{ github.event.pull_request.head.sha }}
-    steps:
-      - uses: actions/checkout@v1
-      - name: dockercomposerun security scan on development environment
-        run: "BROWSERTESTS_IMAGE=${DEVENV_IMAGE} ./SampleCSharpXunitSelenium/script/dockercomposerun -do ./SampleCSharpXunitSelenium/script/run secscan"
-
-  vet-deploy-image-e2e-tests-matrix:
-    needs: [pr-norm-branch, buildx-and-push-branch-unvetted]
-    strategy:
-      fail-fast: false
-      matrix:
-        browser: [chrome, firefox, edge]
-    runs-on: ubuntu-latest
-    env:
-      UNVETTED_IMAGE: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}_unvetted:${{ github.event.pull_request.head.sha }}
-      Browser: ${{ matrix.browser }}
-      SELENIUM_IMAGE: selenium/standalone-${{ matrix.browser }}:latest
-      ValidLoginUser: ${{ secrets.ValidLoginUser }}
-      ValidLoginPass: ${{ secrets.ValidLoginPass }}
-    steps:
-      - uses: actions/checkout@v1
-      - name: dockercomposerun unvetted image
-        run: "BROWSERTESTS_IMAGE=${UNVETTED_IMAGE} ./SampleCSharpXunitSelenium/script/dockercomposerun -c"
-
-# Copy (IF) Vetted Deploy Image
-  copy-branch-vetted-deploy-image:
+  buildx-and-push-dev-image:
+    name: Build Development Image
     needs:
-      - vet-code-standards
-      - vet-dependency-security
-      - vet-deploy-image-e2e-tests-matrix
-      - pr-norm-branch
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@main
+      - image-names
+    uses: brianjbayer/actions-image-cicd/.github/workflows/buildx_push_image.yml@v0.2.0
     with:
-      source_image: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}_unvetted:${{ github.event.pull_request.head.sha }}
-      target_image: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}:${{ github.event.pull_request.head.sha }}
+      image: ${{ needs.image-names.outputs.dev_image }}
+      platforms: "linux/amd64,linux/arm64"
+      buildopts: --target devenv
     secrets:
       registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
       registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-  # Vet Dev Environment Image
-  vet-devenv-image-e2e-tests-matrix:
-    needs: [pr-norm-branch, buildx-and-push-branch-devenv]
-    strategy:
-      fail-fast: false
-      matrix:
-        browser: [chrome, firefox, edge]
-    runs-on: ubuntu-latest
-    env:
-      DEVENV_IMAGE: brianjbayer/samplecsharpxunitselenium_${{ needs.pr-norm-branch.outputs.name }}_dev:${{ github.event.pull_request.head.sha }}
-      Browser: ${{ matrix.browser }}
-      SELENIUM_IMAGE: selenium/standalone-${{ matrix.browser }}:latest
-      ValidLoginUser: ${{ secrets.ValidLoginUser }}
-      ValidLoginPass: ${{ secrets.ValidLoginPass }}
-    steps:
-      - uses: actions/checkout@v1
-      - name: dockercomposerun devenv image
-        run: "BROWSERTESTS_IMAGE=${DEVENV_IMAGE} ./SampleCSharpXunitSelenium/script/dockercomposerun -d ./SampleCSharpXunitSelenium/script/run tests"
+  buildx-and-push-unvetted-image:
+    name: Build Deployment (Unvetted) Image
+    needs:
+      - image-names
+    uses: brianjbayer/actions-image-cicd/.github/workflows/buildx_push_image.yml@v0.2.0
+    with:
+      image: ${{ needs.image-names.outputs.unvetted_image }}
+      platforms: "linux/amd64,linux/arm64"
+    secrets:
+      registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
+      registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+# --- Vet Images ---
+
+  vet-lint-and-dependency-security:
+    name: Vet Code Quality
+    needs:
+      - image-names
+      - buildx-and-push-dev-image
+    uses: brianjbayer/actions-image-cicd/.github/workflows/vet_code_standards.yml@v0.2.0
+    with:
+      lint_command: "BROWSERTESTS_IMAGE=${{ needs.image-names.outputs.dev_image }} ./SampleCSharpXunitSelenium/script/dockercomposerun -do ./SampleCSharpXunitSelenium/script/run lint"
+      dependency_security_command: "BROWSERTESTS_IMAGE=${{ needs.image-names.outputs.dev_image }} ./SampleCSharpXunitSelenium/script/dockercomposerun -do ./SampleCSharpXunitSelenium/script/run secscan"
+
+  # - End-to-End Tests -
+  vet-e2e-tests-deployment:
+    name: Vet End-to-End Tests (Deployment Image)
+    needs:
+      - image-names
+      - buildx-and-push-unvetted-image
+    uses: ./.github/workflows/run_e2e_tests.yml
+    with:
+      e2e_tests_image: ${{ needs.image-names.outputs.unvetted_image }}
+      e2e_tests_command: "./SampleCSharpXunitSelenium/script/dockercomposerun -c"
+    secrets:
+      valid_login_user: ${{ secrets.ValidLoginUser }}
+      valid_login_password: ${{ secrets.ValidLoginPass }}
+
+  # End-to-End Tests (Dev Image)
+  run-e2e-tests-development:
+    name: Run End-to-End Tests (Development Image)
+    needs:
+      - image-names
+      - buildx-and-push-dev-image
+    uses: ./.github/workflows/run_e2e_tests.yml
+    with:
+      e2e_tests_image: ${{ needs.image-names.outputs.dev_image }}
+      e2e_tests_command: "./SampleCSharpXunitSelenium/script/dockercomposerun -d ./SampleCSharpXunitSelenium/script/run tests"
+    secrets:
+      valid_login_user: ${{ secrets.ValidLoginUser }}
+      valid_login_password: ${{ secrets.ValidLoginPass }}
+
+  # --- Promote Vetted Image If It Passes ---
+
+  copy-branch-vetted-deploy-image:
+    name: Promote Vetted Deployment Image
+    needs:
+      - image-names
+      - vet-lint-and-dependency-security
+      - vet-e2e-tests-deployment
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@v0.2.0
+    with:
+      source_image: ${{ needs.image-names.outputs.unvetted_image }}
+      target_image: ${{ needs.image-names.outputs.vetted_image }}
+    secrets:
+      registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
+      registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
