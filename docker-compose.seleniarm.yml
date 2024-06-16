@@ -1,4 +1,3 @@
-﻿version: '3.4'
-services:
+﻿services:
   seleniumbrowser:
     image: ${SELENIUM_IMAGE:-seleniarm/standalone-chromium:latest}

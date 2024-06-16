@@ -1,4 +1,4 @@
-name: On Merge Promote Branch Image to Prod
+name: Promote Branch Image to Production
 on:
   push:
     branches:
@@ -6,66 +6,80 @@ on:
 
 jobs:
 
+  # --- Image Names ---
+
   branch-and-last-commit:
-    uses: brianjbayer/actions-image-cicd/.github/workflows/get_merged_branch_last_commit.yml@main
+    name: Merged Branch and Last Commit
+    uses: brianjbayer/actions-image-cicd/.github/workflows/get_merged_branch_last_commit.yml@v0.2.0
 
-  push-norm-branch:
-    needs: [branch-and-last-commit]
-    uses: brianjbayer/actions-image-cicd/.github/workflows/normalize_for_image_name.yml@main
+  merged-image-names:
+    name: Merged (Branch) Image Names
+    needs:
+      - branch-and-last-commit
+    uses: brianjbayer/actions-image-cicd/.github/workflows/image_names.yml@v0.2.0
     with:
-      raw_name: ${{ needs.branch-and-last-commit.outputs.branch }}
+      add_branch_name: true
+      branch_name: ${{ needs.branch-and-last-commit.outputs.branch }}
+      tag: ${{ needs.branch-and-last-commit.outputs.commit }}
 
-  branch-and-last-commit-merged-info:
-    needs: [branch-and-last-commit, push-norm-branch]
-    runs-on: ubuntu-latest
-    env:
-      BRANCH_LAST_COMMIT: ${{ needs.branch-and-last-commit.outputs.commit }}
-      BRANCH: ${{ needs.branch-and-last-commit.outputs.branch }}
-      NORM_BRANCH: ${{ needs.push-norm-branch.outputs.name }}
-    steps:
-      - name: Output last commit of merged branch env var
-        run: echo "BRANCH_LAST_COMMIT=[${BRANCH_LAST_COMMIT}]"
-      - name: Output merged branch env var
-        run: echo "BRANCH=[${BRANCH}]"
-      - name: Output normalized merged branch env var
-        run: echo "NORM_BRANCH=[${NORM_BRANCH}]"
-
-  promote-branch-last-commit-to-prod:
-    needs: [branch-and-last-commit, push-norm-branch]
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@main
+  production-image-names:
+    name: Production Image Names
+    needs:
+      - branch-and-last-commit
+    uses: brianjbayer/actions-image-cicd/.github/workflows/image_names.yml@v0.2.0
     with:
-      source_image: brianjbayer/samplecsharpxunitselenium_${{ needs.push-norm-branch.outputs.name }}:${{ needs.branch-and-last-commit.outputs.commit }}
-      target_image: brianjbayer/samplecsharpxunitselenium:${{ needs.branch-and-last-commit.outputs.commit }}
+      tag: ${{ needs.branch-and-last-commit.outputs.commit }}
+
+  # --- Promote Production Images ---
+
+  # Promote Deployment Image
+  promote-merged-deploy-image:
+    name: Promote Merged Deployment Image to Production
+    needs:
+      - merged-image-names
+      - production-image-names
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@v0.2.0
+    with:
+      source_image: ${{ needs.merged-image-names.outputs.vetted_image }}
+      target_image: ${{ needs.production-image-names.outputs.vetted_image }}
     secrets:
       registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
       registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-  promote-branch-last-commit-to-prod-latest:
-    needs: [branch-and-last-commit, promote-branch-last-commit-to-prod]
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image_to_latest.yml@main
+  promote-merged-deploy-image-to-latest:
+    name: Promote Latest Deployment Image
+    needs:
+      - production-image-names
+      - promote-merged-deploy-image
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image_to_latest.yml@v0.2.0
     with:
-      image_name: brianjbayer/samplecsharpxunitselenium
-      image_tag: ${{ needs.branch-and-last-commit.outputs.commit }}
+      image: ${{ needs.production-image-names.outputs.vetted_image }}
     secrets:
       registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
       registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-  promote-branch-last-commit-devenv:
-    needs: [branch-and-last-commit, push-norm-branch]
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@main
+  # Promote Development Image
+  promote-merged-dev-image:
+    name: Promote Merged Development Image
+    needs:
+      - merged-image-names
+      - production-image-names
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@v0.2.0
     with:
-      source_image: brianjbayer/samplecsharpxunitselenium_${{ needs.push-norm-branch.outputs.name }}_dev:${{ needs.branch-and-last-commit.outputs.commit }}
-      target_image: brianjbayer/samplecsharpxunitselenium-dev:${{ needs.branch-and-last-commit.outputs.commit }}
+      source_image: ${{ needs.merged-image-names.outputs.dev_image }}
+      target_image: ${{ needs.production-image-names.outputs.dev_image }}
     secrets:
       registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
       registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-  promote-branch-last-commit-devenv-to-latest:
-    needs: [branch-and-last-commit, promote-branch-last-commit-devenv]
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image_to_latest.yml@main
+  promote-merged-dev-image-to-latest:
+    name: Promote Latest Development Image
+    needs:
+      - production-image-names
+      - promote-merged-dev-image
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image_to_latest.yml@v0.2.0
     with:
-      image_name: brianjbayer/samplecsharpxunitselenium-dev
-      image_tag: ${{ needs.branch-and-last-commit.outputs.commit }}
+      image: ${{ needs.production-image-names.outputs.dev_image }}
     secrets:
       registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
       registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
