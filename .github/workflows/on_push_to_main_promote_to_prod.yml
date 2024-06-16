@@ -18,6 +18,7 @@ jobs:
       - branch-and-last-commit
     uses: brianjbayer/actions-image-cicd/.github/workflows/image_names.yml@v0.2.0
     with:
+      image_base_name: brianjbayer/samplecsharpxunitselenium
       add_branch_name: true
       branch_name: ${{ needs.branch-and-last-commit.outputs.branch }}
       tag: ${{ needs.branch-and-last-commit.outputs.commit }}
@@ -28,6 +29,7 @@ jobs:
       - branch-and-last-commit
     uses: brianjbayer/actions-image-cicd/.github/workflows/image_names.yml@v0.2.0
     with:
+      image_base_name: brianjbayer/samplecsharpxunitselenium
       tag: ${{ needs.branch-and-last-commit.outputs.commit }}
 
   # --- Promote Production Images ---
