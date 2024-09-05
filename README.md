@@ -49,10 +49,6 @@ the tests against a
 [Selenium Standalone](https://github.com/SeleniumHQ/docker-selenium)
 container.
 
-> :apple: Apple Silicon Macs will actually run against the
-> [Seleniarm Standalone](https://github.com/seleniumhq-community/docker-seleniarm)
-> container
-
 You can view the running tests, using the included
 Virtual Network Computing (VNC) server.
 
@@ -96,7 +92,7 @@ You can use either a VNC client or a web browser to view the tests.
 For more information, see the Selenium Standalone Image
 [VNC documentation](https://github.com/SeleniumHQ/docker-selenium#debugging)
 
-### To Run Using the Default Chrome Standalone Container
+### To Run Using the Default Chromium Standalone Container
 1. Ensure Docker is running
 2. From the project root directory, run the `dockercomposerun`
    script with the defaults...
@@ -110,13 +106,6 @@ For more information, see the Selenium Standalone Image
 2. From the project root directory, run the `dockercomposerun`
    script setting the `Browser` and `SELENIUM_IMAGE`
    environment variables to specify Firefox...
-
-   For Apple Silicon...
-   ```
-   Browser=firefox SELENIUM_IMAGE=seleniarm/standalone-firefox ValidLoginUser=tomsmith ValidLoginPass=SuperSecretPassword! ./SampleCSharpXunitSelenium/script/dockercomposerun
-   ```
-
-   For Intel...
    ```
    Browser=firefox SELENIUM_IMAGE=selenium/standalone-firefox ValidLoginUser=tomsmith ValidLoginPass=SuperSecretPassword! ./SampleCSharpXunitSelenium/script/dockercomposerun
    ```
@@ -275,10 +264,10 @@ container.
 
 #### Running Just the Development Environment
 To run the development environment on its own in the docker-compose
-environment **without a Selenium browser**, use the `-n` option for
+environment **without a Selenium browser**, use the `-o` option for
 no Selenium and the `-d` option for the development environment...
 ```
-ValidLoginUser=tomsmith ValidLoginPass=SuperSecretPassword! ./SampleCSharpXunitSelenium/script/dockercomposerun -n -d
+ValidLoginUser=tomsmith ValidLoginPass=SuperSecretPassword! ./SampleCSharpXunitSelenium/script/dockercomposerun -o -d
 ```
 
 #### Building Your Own Development Environment Image
@@ -295,7 +284,7 @@ You can also build and run your own development environment image.
    (or other browser containers) and specify your development
    environment image with `BROWSERTESTS_IMAGE`
    ```
-   BROWSERTESTS_IMAGE=browsertests-dev ValidLoginUser=tomsmith ValidLoginPass=SuperSecretPassword! ./SampleCSharpXunitSelenium/script/dockercomposerun -n -d
+   BROWSERTESTS_IMAGE=browsertests-dev ValidLoginUser=tomsmith ValidLoginPass=SuperSecretPassword! ./SampleCSharpXunitSelenium/script/dockercomposerun -o -d
    ```
 
 #### Specifying the Source Code Location
@@ -330,4 +319,3 @@ environment...
 
 ## Sources and Additional Information
 * The [Selenium Docker Images](https://github.com/SeleniumHQ/docker-selenium)
-* The [Seleniarm Docker Images](https://github.com/seleniumhq-community/docker-seleniarm)

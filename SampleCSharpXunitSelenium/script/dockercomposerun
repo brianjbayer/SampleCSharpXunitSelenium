@@ -51,10 +51,7 @@ shift $((OPTIND-1))
 echo "DOCKER VERSION: [`docker --version`]"
 docker_compose_command='docker compose -f docker-compose.yml '
 
-if [ -z ${browsertests_only} ] ; then
-  docker_compose_command="${docker_compose_command} -f docker-compose.selenium.yml "
-  [[ `uname -m` == "arm64" ]] && docker_compose_command="${docker_compose_command} -f docker-compose.seleniarm.yml "
-fi
+[ -z ${browsertests_only} ] && docker_compose_command="${docker_compose_command} -f docker-compose.selenium.yml "
 
 [ ! -z ${devenv} ] && docker_compose_command="${docker_compose_command} -f docker-compose.dev.yml "
 [ ! -z ${ci} ] && docker_compose_command="${docker_compose_command} -f docker-compose.ci.yml "
