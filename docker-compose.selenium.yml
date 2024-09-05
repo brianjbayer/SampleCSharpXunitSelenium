@@ -9,7 +9,8 @@
       - seleniumbrowser
 
   seleniumbrowser:
-    image: ${SELENIUM_IMAGE:-selenium/standalone-chrome:latest}
+    # The selenium/standalone-chromium image is multiplatform (arm64)
+    image: ${SELENIUM_IMAGE:-selenium/standalone-chromium:latest}
     container_name: ${SELENIUM_HOSTNAME:-selenium-browser}
     shm_size: 2gb
     ports:
