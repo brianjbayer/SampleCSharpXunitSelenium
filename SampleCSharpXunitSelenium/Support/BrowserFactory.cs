@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Microsoft.Extensions.Configuration;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chromium;
@@ -107,6 +108,9 @@ namespace SampleCSharpXunitSelenium.Support
                         // Safari only supports local, and has builtin browserdriver
                         SafariOptions safariOptions = new SafariOptions();
                         driver = new SafariDriver(safariOptions);
+
+                        // Wait briefly before first navigation to avoid NoSuchWindowException
+                        Thread.Sleep(1000);
                         break;
                     }
 
@@ -117,6 +121,8 @@ namespace SampleCSharpXunitSelenium.Support
             }
 
             driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(StandardWaitSecs);
+            // First navigate to a blank page before resizing (Safari)
+            driver.Navigate().GoToUrl("about:blank");
             // Set Window Size to avoid missing elements in DOM due to viewport size
             // (issues with macOS Chrome set-maximized and Manage().Window.Maximize())
             driver.Manage().Window.Size = new System.Drawing.Size(MaxHDWidth, MaxHDHeight);
