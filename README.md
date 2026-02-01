@@ -140,7 +140,7 @@ the tests either can be run directly by the
 or by the supplied `run` script.
 
 ### Prerequisites
-* .NET 8 SDK
+* .NET 10 SDK
 * To run the tests using a specific browser requires that browser
   be installed (e.g. to run the tests in the Chrome Browser requires
   Chrome be installed).
