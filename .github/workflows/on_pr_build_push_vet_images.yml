@@ -11,7 +11,7 @@ jobs:
 
   image-names:
     name: PR (Branch) Image Names
-    uses: brianjbayer/actions-image-cicd/.github/workflows/image_names.yml@v0.2.2
+    uses: brianjbayer/actions-image-cicd/.github/workflows/image_names.yml@v0.2
     with:
       image_base_name: brianjbayer/samplecsharpxunitselenium
       add_branch_name: true
@@ -22,7 +22,7 @@ jobs:
     name: Build Development Image
     needs:
       - image-names
-    uses: brianjbayer/actions-image-cicd/.github/workflows/buildx_push_image.yml@v0.2.2
+    uses: brianjbayer/actions-image-cicd/.github/workflows/buildx_push_image.yml@v0.2
     with:
       image: ${{ needs.image-names.outputs.dev_image }}
       platforms: "linux/amd64,linux/arm64"
@@ -35,7 +35,7 @@ jobs:
     name: Build Deployment (Unvetted) Image
     needs:
       - image-names
-    uses: brianjbayer/actions-image-cicd/.github/workflows/buildx_push_image.yml@v0.2.2
+    uses: brianjbayer/actions-image-cicd/.github/workflows/buildx_push_image.yml@v0.2
     with:
       image: ${{ needs.image-names.outputs.unvetted_image }}
       platforms: "linux/amd64,linux/arm64"
@@ -50,7 +50,7 @@ jobs:
     needs:
       - image-names
       - buildx-and-push-dev-image
-    uses: brianjbayer/actions-image-cicd/.github/workflows/vet_code_standards.yml@v0.2.2
+    uses: brianjbayer/actions-image-cicd/.github/workflows/vet_code_standards.yml@v0.2
     with:
       lint_command: "BROWSERTESTS_IMAGE=${{ needs.image-names.outputs.dev_image }} ./SampleCSharpXunitSelenium/script/dockercomposerun -do ./SampleCSharpXunitSelenium/script/run lint"
       dependency_security_command: "BROWSERTESTS_IMAGE=${{ needs.image-names.outputs.dev_image }} ./SampleCSharpXunitSelenium/script/dockercomposerun -do ./SampleCSharpXunitSelenium/script/run secscan"
@@ -91,7 +91,7 @@ jobs:
       - image-names
       - vet-lint-and-dependency-security
       - vet-e2e-tests-deployment
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@v0.2.2
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@v0.2
     with:
       source_image: ${{ needs.image-names.outputs.unvetted_image }}
       target_image: ${{ needs.image-names.outputs.vetted_image }}

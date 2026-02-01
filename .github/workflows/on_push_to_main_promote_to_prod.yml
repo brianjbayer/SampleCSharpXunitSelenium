@@ -10,13 +10,13 @@ jobs:
 
   branch-and-last-commit:
     name: Merged Branch and Last Commit
-    uses: brianjbayer/actions-image-cicd/.github/workflows/get_merged_branch_last_commit.yml@v0.2.2
+    uses: brianjbayer/actions-image-cicd/.github/workflows/get_merged_branch_last_commit.yml@v0.2
 
   merged-image-names:
     name: Merged (Branch) Image Names
     needs:
       - branch-and-last-commit
-    uses: brianjbayer/actions-image-cicd/.github/workflows/image_names.yml@v0.2.2
+    uses: brianjbayer/actions-image-cicd/.github/workflows/image_names.yml@v0.2
     with:
       image_base_name: brianjbayer/samplecsharpxunitselenium
       add_branch_name: true
@@ -27,7 +27,7 @@ jobs:
     name: Production Image Names
     needs:
       - branch-and-last-commit
-    uses: brianjbayer/actions-image-cicd/.github/workflows/image_names.yml@v0.2.2
+    uses: brianjbayer/actions-image-cicd/.github/workflows/image_names.yml@v0.2
     with:
       image_base_name: brianjbayer/samplecsharpxunitselenium
       tag: ${{ needs.branch-and-last-commit.outputs.commit }}
@@ -40,7 +40,7 @@ jobs:
     needs:
       - merged-image-names
       - production-image-names
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@v0.2.2
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@v0.2
     with:
       source_image: ${{ needs.merged-image-names.outputs.vetted_image }}
       target_image: ${{ needs.production-image-names.outputs.vetted_image }}
@@ -53,7 +53,7 @@ jobs:
     needs:
       - production-image-names
       - promote-merged-deploy-image
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image_to_latest.yml@v0.2.2
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image_to_latest.yml@v0.2
     with:
       image: ${{ needs.production-image-names.outputs.vetted_image }}
     secrets:
@@ -66,7 +66,7 @@ jobs:
     needs:
       - merged-image-names
       - production-image-names
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@v0.2.2
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@v0.2
     with:
       source_image: ${{ needs.merged-image-names.outputs.dev_image }}
       target_image: ${{ needs.production-image-names.outputs.dev_image }}
@@ -79,7 +79,7 @@ jobs:
     needs:
       - production-image-names
       - promote-merged-dev-image
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image_to_latest.yml@v0.2.2
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image_to_latest.yml@v0.2
     with:
       image: ${{ needs.production-image-names.outputs.dev_image }}
     secrets:
