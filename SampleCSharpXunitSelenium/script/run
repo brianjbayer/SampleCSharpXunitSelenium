@@ -1,125 +1,122 @@
 #!/bin/sh
 
-# -----------------------------------------------
-# Project run script to run
-#   - lint
-#   - secscan
-#   - tests
-#   - or it runs all arguments
-# -----------------------------------------------
+# --- Project Commands ---
+dotnet='dotnet'
+lint="${dotnet} format --verify-no-changes"
+secscan="${dotnet} list package --vulnerable --include-transitive"
+tests="${dotnet} test --logger \"console;verbosity=detailed\""
 
-# --- Functions ---
-run_and_exit_return_code () {
-  # Exit script on any errors
+usage() {
+  cat << USAGE
+Usage: $0 [-hp] [COMMAND] [ARG...]
+
+This is the project "run" script, executing common application tasks.
+
+COMMANDS:
+  lint     Run the code formatter verification [${lint}]
+  secscan  Run a vulnerability scan [${secscan}]
+  tests    Run the tests [${tests}]
+
+  dotnet    [ARG...]  Run any other dotnet command with arguments (e.g. 'dotnet build')
+
+  [COMMAND] [ARG...]  Run any other command with arguments
+
+OPTIONS:
+  -h  Show this help message
+  -p  Parallel/test specific flag (currently unused)
+USAGE
+}
+
+err_exit() {
+  err_code=$1
+  err_msg="$2"
+  echo "${err_msg} (${err_code})" 1>&2
+  exit $err_code
+}
+
+exit_return_code() {
+  rc=$1
+  echo "EXITING WITH RUN RETURN CODE [${rc}]"
+  exit $rc
+}
+
+run_and_exit_return_code() {
   set -e
-
-  # Set to all positional parameters each expanding
-  # to a separate word
   command_to_run="$@"
   if [ -z "$command_to_run" ]; then
-    echo "ERROR: Function requires a command argument (86)"
-    exit 86
+    err_exit 1 "Missing command"
   fi
 
-  # Run the command and preserve exit code
-  echo "RUNNING [${command_to_run} ]..."
-  # Allow to fail but catch return code
+  echo "RUNNING [${command_to_run}]..."
   set +e
   $command_to_run
   run_return_code=$?
-  # NOTE return code must be caught before any other command
+  # Must catch return code immediately after command
   set -e
-  echo ''
-
-  echo "EXITING WITH RUN RETURN CODE [${run_return_code}]"
-  exit $run_return_code
+  exit_return_code ${run_return_code}
 }
 
-wait_until_ready_if_remote_browser() {
-  # Assumes curl
-  if [ ! -z "${REMOTE_STATUS}" ];
-  then
-    COUNTER=0
-    echo "Waiting for remote browser at [${REMOTE_STATUS}] to become available"
-    until curl -fsSL "${REMOTE_STATUS}" >/dev/null 2>&1; do
-      printf "."
-      sleep 1
-      COUNTER=$((COUNTER + 1))
-      if [ $COUNTER -eq 30 ] ; then
-        echo "✘"
-        echo "ERROR: Timed out waiting for remote browser (99)"
-        exit 99
-      fi
-    done
-    echo "✔"
-  fi
-}
-
-# Unfortunately dotnet list package --vulnerable returns
-# a 0 (passing) return code when vulnerabilities
 run_dotnet_list_package_scan_output_for_vuln() {
-  run_command="dotnet restore"
-  echo "RUNNING [${run_command} ]"
-  $run_command
+  dotnet_restore="${dotnet} restore"
+  echo "RUNNING [${dotnet_restore} ]"
+  $dotnet_restore
 
-  run_command="dotnet list package --vulnerable --include-transitive $@"
-  echo "RUNNING [${run_command} ] AND SCANNING OUTPUT WHICH WILL NOT BE SEEN..."
-  $run_command | grep -q 'has no vulnerable packages given the current sources' && passed=true
+  echo "RUNNING [${secscan} ] WITH OUTPUT FOR LOGGING"
+  set +e ; $secscan ; set -e
 
-  echo "...Passed=[${passed}]"
-  if [ ! -z ${passed} ]; then
-    echo "RUN PASSED"
-    run_return_code=0
-  else
-    run_return_code=86
-    echo "RUN FAILED!!! - RE-RUNNING [${run_command} ] WITH OUTPUT..."
-    set +e
-    $run_command
-    rc=$?
-    set -e
-    echo ''
-    echo "RE-RUN RETURN CODE [${rc}]..."
-  fi
+  echo "RUNNING [${secscan} ] AND SCANNING OUTPUT WHICH WILL NOT BE SEEN..."
+  $secscan | grep -q 'has no vulnerable packages given the current sources' && passed=true
 
-  echo "EXITING WITH RUN RETURN CODE [${run_return_code}]"
-  exit $run_return_code
+  [ -n "$passed" ] && run_return_code=0 || run_return_code=1
+  exit_return_code ${run_return_code}
 }
 
-# ------------
 # --- MAIN ---
-# ------------
-# Exit script on any errors
 set -e
 
-# Run any recognized actions
+while getopts ":hp" opt; do
+  case "${opt}" in
+    h) usage; exit ;;
+    p) parallel=1 ;;  # future flag support
+    \?) usage; err_exit 1 "Invalid Option: -$OPTARG" ;;
+  esac
+done
+shift $((OPTIND-1))
+
 action="${1}"
+recognized=
+
 case "$action" in
   "lint")
+    recognized=1
     shift
-    recognized_action=1
-    run_and_exit_return_code "dotnet format --verify-no-changes $@"
-  ;;
+    run_and_exit_return_code "${lint} $@"
+    ;;
 
   "secscan")
+    recognized=1
     shift
-    recognized_action=1
+    # The $secscan command returns zero on scan fail :-(
     run_dotnet_list_package_scan_output_for_vuln
-  ;;
+    ;;
 
   "tests")
+    recognized=1
     shift
-    recognized_action=1
-    wait_until_ready_if_remote_browser
-    # Run the tests (with any passed in args) and log to stdout the progress
-    run_and_exit_return_code dotnet test --logger "console;verbosity=detailed" "$@"
-  ;;
+    run_and_exit_return_code "${tests} $@"
+    ;;
+
+    "dotnet")
+    recognized=1
+    shift
+    run_and_exit_return_code "${dotnet} $@"
+    ;;
 esac
 
-# Still here, then either not a recognized action or ???
-if [ -z "$recognized_action" ]; then
-  # No recognized actions so run all the arguments as the command"
+# If no recognized action, run the provided command
+if [ -z "$recognized" ]; then
   run_and_exit_return_code "$@"
 else
-  echo "ERROR: should have exited!!! (99)"
-  exit 99
+  # Shouldn’t get here
+  err_exit 99 "Internal logic error"
 fi
