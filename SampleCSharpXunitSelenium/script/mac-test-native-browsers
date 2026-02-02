@@ -52,27 +52,27 @@ run_command dotnet test
 
 echo "Testing Chrome..."
 echo "Chrome Headed"
-Browser=chrome run_command $run_tests_command
+BROWSER=chrome run_command $run_tests_command
 
 echo "Chrome Headless"
-Headless=true Browser=chrome run_command $run_tests_command
+HEADLESS=true BROWSER=chrome run_command $run_tests_command
 
 echo "Testing Edge..."
 echo "Edge Headed"
-Browser=edge run_command $run_tests_command
+BROWSER=edge run_command $run_tests_command
 
 echo "Edge Headless"
-Headless=true Browser=edge run_command $run_tests_command
+HEADLESS=true BROWSER=edge run_command $run_tests_command
 
 echo "Testing Firefox..."
 echo "Firefox Headed"
-Browser=firefox run_command $run_tests_command
+BROWSER=firefox run_command $run_tests_command
 
 echo "Firefox Headless"
-Headless=true Browser=firefox run_command $run_tests_command
+HEADLESS=true BROWSER=firefox run_command $run_tests_command
 
 echo "Testing Safari (Headed Sequential)"
-Browser=safari run_command $run_tests_command
+BROWSER=safari run_command $run_tests_command
 
 echo "--- ALL TESTS PASSED ---"
 echo ""

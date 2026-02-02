@@ -19,11 +19,11 @@ namespace SampleCSharpXunitSelenium.Support
 
         private static bool IsLocalBrowser(IConfiguration config)
         {
-            return String.IsNullOrEmpty(config["Remote_Url"]);
+            return String.IsNullOrEmpty(config["REMOTE_URL"]);
         }
         private static bool IsHeadless(IConfiguration config)
         {
-            return Boolean.Parse(config["Headless"] ?? "false");
+            return Boolean.Parse(config["HEADLESS"] ?? "false");
         }
         private static T ConfigureChromiumOptions<T>(bool isHeadless) where T : ChromiumOptions
         {
@@ -77,9 +77,9 @@ namespace SampleCSharpXunitSelenium.Support
 
             bool isHeadless = IsHeadless(config);
             bool isLocal = IsLocalBrowser(config);
-            String remoteUrl = config["Remote_Url"];
+            String remoteUrl = config["REMOTE_URL"];
 
-            String browser = config["Browser"].ToLower();
+            String browser = config["BROWSER"].ToLower();
             switch (browser)
             {
                 case "chrome":

@@ -4,5 +4,5 @@ services:
     container_name: ${BROWSERTESTS_HOSTNAME:-browsertests}
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-unused}
-      - ValidLoginUser
-      - ValidLoginPass
+      - LOGIN_USERNAME
+      - LOGIN_PASSWORD
