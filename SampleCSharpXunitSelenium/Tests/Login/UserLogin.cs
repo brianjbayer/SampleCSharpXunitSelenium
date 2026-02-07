@@ -22,7 +22,8 @@ namespace SampleCSharpXunitSelenium.Tests.Login
             _driver = _base.InitializeWebDriver();
 
             // Navigate to Login Page
-            _driver.Url = _base.Configuration["LoginPageUrl"];
+            var loginUrl = new Uri(new Uri(_base.Configuration["BASE_URL"]), "login");
+            _driver.Navigate().GoToUrl(loginUrl);
             _loginPage = new LoginPage(_driver);
         }
 
@@ -49,11 +50,8 @@ namespace SampleCSharpXunitSelenium.Tests.Login
         [Fact]
         public void TestLoginWithValidCredentials()
         {
-            string validUser = _base.Configuration["ValidLoginUser"];
-            string validPass = _base.Configuration["ValidLoginPass"];
-
-            SecureAreaPage secureAreaPage;
-            string secureAreaPageURL = _base.Configuration["SecureAreaPageUrl"];
+            string validUser = _base.Configuration["LOGIN_USERNAME"];
+            string validPass = _base.Configuration["LOGIN_PASSWORD"];
 
             // Given the user is on the Login Page
             _driver.WaitFor(() => _loginPage.loginPageHeading.Displayed
@@ -64,6 +62,8 @@ namespace SampleCSharpXunitSelenium.Tests.Login
             _loginPage.LoginUser(validUser, validPass);
 
             // Then the user is taken to the secure area page
+            SecureAreaPage secureAreaPage;
+
             secureAreaPage = new SecureAreaPage(_driver);
             _driver.WaitFor(() => secureAreaPage.secureAreaHeading.Displayed
             , TimeSpan.FromSeconds(3)

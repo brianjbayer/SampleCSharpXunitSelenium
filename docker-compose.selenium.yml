@@ -1,10 +1,10 @@
 ﻿services:
   browsertests:
     environment:
-      - Browser=${Browser:-chrome}
-      - Headless
-      - Remote_Url=http://${SELENIUM_HOSTNAME:-selenium-browser}:4444/wd/hub
-      - REMOTE_STATUS=http://${SELENIUM_HOSTNAME:-selenium-browser}:4444/wd/hub/status
+      - BROWSER=${BROWSER:-chrome}
+      - HEADLESS
+      - REMOTE_URL=http://${SELENIUM_HOSTNAME:-selenium-browser}:4444/wd/hub
+      - WAIT_ON_ENDPOINT=${WAIT_ON_ENDPOINT:-http://seleniumbrowser:4444/wd/hub/status}
     depends_on:
       - seleniumbrowser
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Microsoft.Extensions.Configuration;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chromium;
@@ -18,11 +19,11 @@ namespace SampleCSharpXunitSelenium.Support
 
         private static bool IsLocalBrowser(IConfiguration config)
         {
-            return String.IsNullOrEmpty(config["Remote_Url"]);
+            return String.IsNullOrEmpty(config["REMOTE_URL"]);
         }
         private static bool IsHeadless(IConfiguration config)
         {
-            return Boolean.Parse(config["Headless"] ?? "false");
+            return Boolean.Parse(config["HEADLESS"] ?? "false");
         }
         private static T ConfigureChromiumOptions<T>(bool isHeadless) where T : ChromiumOptions
         {
@@ -76,9 +77,9 @@ namespace SampleCSharpXunitSelenium.Support
 
             bool isHeadless = IsHeadless(config);
             bool isLocal = IsLocalBrowser(config);
-            String remoteUrl = config["Remote_Url"];
+            String remoteUrl = config["REMOTE_URL"];
 
-            String browser = config["Browser"].ToLower();
+            String browser = config["BROWSER"].ToLower();
             switch (browser)
             {
                 case "chrome":
@@ -107,6 +108,9 @@ namespace SampleCSharpXunitSelenium.Support
                         // Safari only supports local, and has builtin browserdriver
                         SafariOptions safariOptions = new SafariOptions();
                         driver = new SafariDriver(safariOptions);
+
+                        // Wait briefly before first navigation to avoid NoSuchWindowException
+                        Thread.Sleep(1000);
                         break;
                     }
 
@@ -117,6 +121,8 @@ namespace SampleCSharpXunitSelenium.Support
             }
 
             driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(StandardWaitSecs);
+            // First navigate to a blank page before resizing (Safari)
+            driver.Navigate().GoToUrl("about:blank");
             // Set Window Size to avoid missing elements in DOM due to viewport size
             // (issues with macOS Chrome set-maximized and Manage().Window.Maximize())
             driver.Manage().Window.Size = new System.Drawing.Size(MaxHDWidth, MaxHDHeight);

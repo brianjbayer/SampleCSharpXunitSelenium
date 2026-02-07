@@ -13,8 +13,8 @@ This script orchestrates 'docker compose run browsertests' using the docker comp
 
 OPTIONS: (in override order)
   -o: Run only the browsertests service (no Selenium Browser)
-  -d: Run the docker-compose Dev environment
-  -c: Run the docker-compose CI environment (must specify BROWSERTESTS_IMAGE)
+  -d: Run the docker compose Dev environment
+  -c: Run the docker compose CI environment (must specify BROWSERTESTS_IMAGE)
 USAGE
 }
 
