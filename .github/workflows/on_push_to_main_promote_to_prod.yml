@@ -32,6 +32,10 @@ jobs:
       image_base_name: brianjbayer/samplecsharpxunitselenium
       tag: ${{ needs.branch-and-last-commit.outputs.commit }}
 
+  latest-tag:
+    name: Latest Tag
+    uses: brianjbayer/actions-image-cicd/.github/workflows/latest_tag.yml@v0.2
+
   # --- Promote Production Images ---
 
   # Promote Deployment Image
@@ -51,11 +55,13 @@ jobs:
   promote-merged-deploy-image-to-latest:
     name: Promote Latest Deployment Image
     needs:
-      - production-image-names
       - promote-merged-deploy-image
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image_to_latest.yml@v0.2
+      - production-image-names
+      - latest-tag
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@v0.2
     with:
-      image: ${{ needs.production-image-names.outputs.vetted_image }}
+      source_image: ${{ needs.production-image-names.outputs.vetted_image }}
+      target_image: "${{ needs.production-image-names.outputs.vetted_repository }}:${{ needs.latest-tag.outputs.tag }}"
     secrets:
       registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
       registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
@@ -77,11 +83,33 @@ jobs:
   promote-merged-dev-image-to-latest:
     name: Promote Latest Development Image
     needs:
-      - production-image-names
       - promote-merged-dev-image
-    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image_to_latest.yml@v0.2
+      - production-image-names
+      - latest-tag
+    uses: brianjbayer/actions-image-cicd/.github/workflows/copy_image.yml@v0.2
     with:
-      image: ${{ needs.production-image-names.outputs.dev_image }}
+      source_image: ${{ needs.production-image-names.outputs.dev_image }}
+      target_image: "${{ needs.production-image-names.outputs.dev_repository }}:${{ needs.latest-tag.outputs.tag }}"
+    secrets:
+      registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
+      registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+  # --- Delete PR Branch Image Repositories ---
+
+  delete-pr-branch-image-repositories:
+    name: Delete PR Branch Image Repositories
+    needs:
+    - merged-image-names
+    - promote-merged-dev-image-to-latest
+    - promote-merged-deploy-image-to-latest
+    uses: brianjbayer/actions-image-cicd/.github/workflows/delete_docker_hub_repositories.yml@v0.2
+    with:
+      repositories: >
+        [
+          "${{ needs.merged-image-names.outputs.dev_repository }}",
+          "${{ needs.merged-image-names.outputs.unvetted_repository }}",
+          "${{ needs.merged-image-names.outputs.vetted_repository }}"
+        ]
     secrets:
       registry_u: ${{ secrets.DOCKER_HUB_USERNAME }}
       registry_p: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
