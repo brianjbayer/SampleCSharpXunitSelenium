@@ -78,7 +78,7 @@ jobs:
     uses: ./.github/workflows/run_e2e_tests.yml
     with:
       e2e_tests_image: ${{ needs.image-names.outputs.dev_image }}
-      e2e_tests_command: "./SampleCSharpXunitSelenium/script/dockercomposerun -d ./SampleCSharpXunitSelenium/script/run tests"
+      e2e_tests_command: "./SampleCSharpXunitSelenium/script/dockercomposerun -d bash -c './SampleCSharpXunitSelenium/wait_on_endpoint && ./SampleCSharpXunitSelenium/script/run tests'"
     secrets:
       valid_login_user: ${{ secrets.ValidLoginUser }}
       valid_login_password: ${{ secrets.ValidLoginPass }}

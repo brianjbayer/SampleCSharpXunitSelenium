@@ -30,5 +30,6 @@ COPY --chown=deployer . /app/
 # Change to the tests subproject directory
 WORKDIR /app/SampleCSharpXunitSelenium
 
-# Overridable: Run the tests
-CMD ["./script/run", "tests"]
+# Overridable: Run the tests in the tests subproject directory
+# # Expects the wait_on_endpoint script environment variable(s) to be set
+CMD ["bash", "-c", "./wait_on_endpoint && ./script/run tests"]

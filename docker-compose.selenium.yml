@@ -4,7 +4,7 @@
       - BROWSER=${BROWSER:-chrome}
       - HEADLESS
       - REMOTE_URL=http://${SELENIUM_HOSTNAME:-selenium-browser}:4444/wd/hub
-      - REMOTE_STATUS=http://${SELENIUM_HOSTNAME:-selenium-browser}:4444/wd/hub/status
+      - WAIT_ON_ENDPOINT=${WAIT_ON_ENDPOINT:-http://seleniumbrowser:4444/wd/hub/status}
     depends_on:
       - seleniumbrowser
 

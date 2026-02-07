@@ -1,0 +1,35 @@
+#!/bin/sh
+
+# Exit script on any errors
+set -e
+
+err_exit() {
+  err_code=$1
+  err_msg="$2"
+  echo "ERROR: ${err_msg}[${err_code}]" 1>&2
+  exit $err_code
+}
+
+endpoint=${1:-$WAIT_ON_ENDPOINT}
+[ -z "$endpoint" ] && err_exit 1 "Requires an endpoint"
+
+wait_time=${WAIT_ON_WAIT:-30}
+
+response_code=${WAIT_ON_RESPONSE_CODE:-200}
+
+check_response_code() {
+  http_code=$(curl -o /dev/null -s -w '%{http_code}' "$2") || return 1
+  [ "$http_code" = "$1" ]
+}
+
+counter=0
+until check_response_code $response_code $endpoint; do
+  printf "."
+  sleep 1
+  counter=$((counter + 1))
+  if [ $counter -eq $wait_time ]; then
+    echo "✘"
+    err_exit 124 "Waited ${wait_time} seconds for ${response_code} from '${endpoint}'"
+  fi
+done
+echo "✔"
