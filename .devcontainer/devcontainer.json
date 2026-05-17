@@ -1,0 +1,43 @@
+{
+  "name": "Sample Login DevContainer",
+
+  "dockerComposeFile": [
+    "../docker-compose.yml",
+    "../docker-compose.selenium.yml",
+    "../docker-compose.dev.yml"
+  ],
+
+  "service": "browsertests",
+  "workspaceFolder": "/app",
+  "overrideCommand": true,
+
+  // "postStartCommand": "bundle install",
+  "remoteUser": "root",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "davidanson.vscode-markdownlint",
+        "eamodio.gitlens",
+        "github.vscode-github-actions",
+        "ms-azuretools.vscode-containers",
+        "ms-azuretools.vscode-docker",
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "ms-vscode-remote.remote-containers",
+        "redhat.vscode-yaml",
+        "streetsidesoftware.code-spell-checker"
+      ],
+      "settings": {
+        "terminal.integrated.shell.linux": "bash",
+        "dotnet.server.useOmnisharp": false // Set to false to use C# Dev Kit (LSP)
+      }
+    }
+  },
+
+    // Automatically restore NuGet packages after container creation
+  "postCreateCommand": "dotnet restore",
+
+  "shutdownAction": "stopCompose"
+}
