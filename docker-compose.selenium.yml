@@ -1,7 +1,7 @@
 ﻿services:
   browsertests:
     environment:
-      - BROWSER=${BROWSER:-chrome}
+      - BROWSER_TYPE=${BROWSER_TYPE:-chrome}
       - HEADLESS
       - REMOTE_URL=http://${SELENIUM_HOSTNAME:-selenium-browser}:4444/wd/hub
       - WAIT_ON_ENDPOINT=${WAIT_ON_ENDPOINT:-http://seleniumbrowser:4444/wd/hub/status}

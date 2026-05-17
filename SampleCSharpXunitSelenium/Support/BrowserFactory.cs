@@ -79,7 +79,7 @@ namespace SampleCSharpXunitSelenium.Support
             bool isLocal = IsLocalBrowser(config);
             String remoteUrl = config["REMOTE_URL"];
 
-            String browser = config["BROWSER"].ToLower();
+            String browser = config["BROWSER_TYPE"].ToLower();
             switch (browser)
             {
                 case "chrome":

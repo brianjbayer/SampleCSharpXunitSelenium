@@ -27,12 +27,12 @@ see the [PREREQUISITES.md](PREREQUISITES.md)
 
 #### Specify Browser
 
-`BROWSER=`...
+`BROWSER_TYPE=`...
 
 **Example:**
-`BROWSER=chrome`
+`BROWSER_TYPE=chrome`
 
-> If the `BROWSER` environment variable is not provided (i.e. set),
+> If the `BROWSER_TYPE` environment variable is not provided (i.e. set),
 > then the Chrome browser is used from its setting as the default in
 > `SampleCSharpXunitSelenium/appsettings.json`
 
@@ -83,7 +83,7 @@ dotnet test
 #### Local Browsers
 
 ```bash
-BROWSER=firefox HEADLESS=true ./SampleCSharpXunitSelenium/script/run tests
+BROWSER_TYPE=firefox HEADLESS=true ./SampleCSharpXunitSelenium/script/run tests
 ```
 
 #### Using the Selenium Standalone Containers
@@ -106,5 +106,5 @@ For specifics, see the Selenium Standalone Image
 3. Run the tests specifying the remote Selenium container...
 
    ```bash
-   REMOTE_URL='http://localhost:4444/wd/hub' BROWSER=chrome ./SampleCSharpXunitSelenium/script/run tests
+   REMOTE_URL='http://localhost:4444/wd/hub' BROWSER_TYPE=chrome ./SampleCSharpXunitSelenium/script/run tests
    ```
