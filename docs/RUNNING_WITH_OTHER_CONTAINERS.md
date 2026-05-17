@@ -17,18 +17,18 @@ in the [PREREQUISITES.md](PREREQUISITES.md)
    environment variables to specify Firefox...
 
    ```bash
-   BROWSER=firefox SELENIUM_IMAGE=selenium/standalone-firefox ./SampleCSharpXunitSelenium/script/dockercomposerun
+   BROWSER_TYPE=firefox SELENIUM_IMAGE=selenium/standalone-firefox ./SampleCSharpXunitSelenium/script/dockercomposerun
    ```
 
 ### To Run Using the Edge Standalone Container (Intel only)
 
 1. Ensure Docker is running
 2. From the project root directory, run the `dockercomposerun`
-   script setting the `BROWSER` and `SELENIUM_IMAGE`
+   script setting the `BROWSER_TYPE` and `SELENIUM_IMAGE`
    environment variables to specify Edge...
 
    ```bash
-   BROWSER=edge SELENIUM_IMAGE=selenium/standalone-edge ./SampleCSharpXunitSelenium/script/dockercomposerun
+   BROWSER_TYPE=edge SELENIUM_IMAGE=selenium/standalone-edge ./SampleCSharpXunitSelenium/script/dockercomposerun
    ```
 
    There is no `arm64` Selenium Edge (or Chrome) image. On this machine architecture

@@ -35,7 +35,7 @@ jobs:
         browser: [chrome, firefox, edge]
     env:
       BROWSERTESTS_IMAGE: ${{ inputs.e2e_tests_image }}
-      BROWSER: ${{ matrix.browser }}
+      BROWSER_TYPE: ${{ matrix.browser }}
       SELENIUM_IMAGE: selenium/standalone-${{ matrix.browser }}:latest
       LOGIN_USERNAME: ${{ secrets.valid_login_user }}
       LOGIN_PASSWORD: ${{ secrets.valid_login_password }}
